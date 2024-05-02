@@ -127,19 +127,27 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->movie_likes;
     }
 
-    public function addMovieLike(Movies $movieLike): static
+    public function addMovieLike(Movies $movie): self
     {
-        if (!$this->movie_likes->contains($movieLike)) {
-            $this->movie_likes->add($movieLike);
+        if (!$this->movie_likes->contains($movie)) {
+            $this->movie_likes[] = $movie;
+            $movie->addMovieLike($this);
         }
-
+    
+        return $this;
+    }
+    
+    public function removeMovieLike(Movies $movie): self
+    {
+        if ($this->movie_likes->removeElement($movie)) {
+            $movie->removeMovieLike($this);
+        }
+    
         return $this;
     }
 
-    public function removeMovieLike(Movies $movieLike): static
+    public function hasLikedMovie(Movies $movie): bool
     {
-        $this->movie_likes->removeElement($movieLike);
-
-        return $this;
+    return $this->movie_likes->contains($movie);
     }
 }

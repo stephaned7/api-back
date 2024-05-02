@@ -39,6 +39,12 @@ class Movies
     #[ORM\ManyToMany(targetEntity: Categories::class, mappedBy: 'movies')]
     #[Groups("movie:read")]
     private Collection $categories;
+
+    /**
+     * @var Collection<int, User>
+     */
+    #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'movie_likes')]
+    private Collection $users;
     
     public function __construct()
     {
@@ -123,5 +129,31 @@ class Movies
         }
 
         return $this;
+    }
+
+    public function addMovieLike(User $user): static
+    {
+        if (!$this->users->contains($user)) {
+            $this->users->add($user);
+        }
+    
+        return $this;
+    }
+    
+    public function removeMovieLike(User $user): static
+    {
+        $this->users->removeElement($user);
+    
+        return $this;
+    }
+
+    public function isLikedByUser(User $user): bool
+    {
+        return $this->users->contains($user);
+    }
+
+    public function getLikesCount(): int
+    {
+        return $this->users->count();
     }
 }
