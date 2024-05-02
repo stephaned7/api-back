@@ -2,6 +2,8 @@
 
 namespace App\Entity;
 
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\UserRepository;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -30,6 +32,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\Column]
     private ?string $password = null;
+
+    /**
+     * @var Collection<int, Movies>
+     */
+    #[ORM\ManyToMany(targetEntity: Movies::class, inversedBy: 'users')]
+    private Collection $movie_likes;
+
+    public function __construct()
+    {
+        $this->movie_likes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -104,5 +117,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         // If you store any temporary, sensitive data on the user, clear it here
         // $this->plainPassword = null;
+    }
+
+    /**
+     * @return Collection<int, Movies>
+     */
+    public function getMovieLikes(): Collection
+    {
+        return $this->movie_likes;
+    }
+
+    public function addMovieLike(Movies $movieLike): static
+    {
+        if (!$this->movie_likes->contains($movieLike)) {
+            $this->movie_likes->add($movieLike);
+        }
+
+        return $this;
+    }
+
+    public function removeMovieLike(Movies $movieLike): static
+    {
+        $this->movie_likes->removeElement($movieLike);
+
+        return $this;
     }
 }
