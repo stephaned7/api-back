@@ -86,4 +86,86 @@ class SecurityController extends AbstractController
         $res->headers->clearCookie('BEARER');
         return $res;
     }
+
+    #[Route('/userList', name:'user_list', methods: ['GET'])]
+    public function getAllUsers(): JsonResponse
+    {
+        $users = $this->userRepo->findAll();
+        $usersArray = [];
+
+        foreach($users as $user){
+            $usersArray[] = [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'roles' => $user->getRoles()
+            ];
+        }
+        
+
+        return $this->json($usersArray);
+    }
+
+    #[Route('/userBan/{id}', name:'user_ban', methods: ['PUT'])]
+    public function banUser($id): JsonResponse
+    {
+        $user = $this->userRepo->find($id);
+
+        if(!$user){
+            return new JsonResponse(['message' => 'Utilisateur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $user->setRoles(['ROLE_BANNED']);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return $this->json([
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles()
+        ]);
+    }
+
+    #[Route('/userUnban/{id}', name:'user_unban', methods: ['PUT'])]
+    public function unbanUser($id): JsonResponse
+    {
+        $user = $this->userRepo->find($id);
+
+        if(!$user){
+            return new JsonResponse(['message' => 'Utilisateur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $user->setRoles(['ROLE_USER']);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return $this->json([
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles()
+        ]);
+
+    }
+
+    #[Route('/userPromote/{id}', name:'user_promote', methods: ['PUT'])]
+    public function promoteUser($id): JsonResponse
+    {
+        $user = $this->userRepo->find($id);
+
+        if(!$user){
+            return new JsonResponse(['message' => 'Utilisateur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
+        }
+
+        $user->setRoles(['ROLE_ADMIN']);
+
+        $this->em->persist($user);
+        $this->em->flush();
+
+        return $this->json([
+            'id' => $user->getId(),
+            'email' => $user->getEmail(),
+            'roles' => $user->getRoles()
+        ]);
+    }
 }

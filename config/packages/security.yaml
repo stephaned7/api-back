@@ -33,6 +33,10 @@ security:
     access_control:
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/userList, roles: ROLE_ADMIN }
+        - { path: ^/api/userBan, roles: ROLE_ADMIN }
+        - { path: ^/api/userUnban, roles: ROLE_ADMIN }
+        - { path: ^/api/userPromote, roles: ROLE_ADMIN }
         - { path: ^/api/movies, roles: PUBLIC_ACCESS, methods: [GET] }
         - { path: ^/api/movies$, roles: IS_AUTHENTICATED_FULLY, methods: [POST, PUT, DELETE] }
         - { path: ^/api/categories, roles: PUBLIC_ACCESS, methods: [GET] }
