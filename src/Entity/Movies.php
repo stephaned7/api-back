@@ -45,6 +45,9 @@ class Movies
      */
     #[ORM\ManyToMany(targetEntity: User::class, mappedBy: 'movie_likes')]
     private Collection $users;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $trailer = null;
     
     public function __construct()
     {
@@ -155,5 +158,17 @@ class Movies
     public function getLikesCount(): int
     {
         return $this->users->count();
+    }
+
+    public function getTrailer(): ?string
+    {
+        return $this->trailer;
+    }
+
+    public function setTrailer(?string $trailer): static
+    {
+        $this->trailer = $trailer;
+
+        return $this;
     }
 }

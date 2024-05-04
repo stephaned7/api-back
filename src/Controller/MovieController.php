@@ -84,6 +84,7 @@ class MovieController extends AbstractController
             'synopsis' => $movie->getSynopsis(),
             'release_date' => $movie->getReleaseDate(),
             'director' => $movie->getDirector(),
+            'trailer' => $movie->getTrailer(),
             'categories' => $categoriesArray,
         ];
 
@@ -102,6 +103,7 @@ class MovieController extends AbstractController
         $movie->setSynopsis($data['synopsis']);
         $movie->setReleaseDate($data['release_date']);
         $movie->setDirector($data['director']);
+        $movie->setTrailer($data['trailer']);
         $categs = $data['categories'];
         foreach($categs as $categId){
             $categ = $doctrine->getRepository(Categories::class)->find($categId);
@@ -131,6 +133,7 @@ class MovieController extends AbstractController
         $movie->setSynopsis($data['synopsis'] ?? $movie->getSynopsis());
         $movie->setReleaseDate($data['release_date'] ?? $movie->getReleaseDate());
         $movie->setDirector($data['director'] ?? $movie->getDirector());
+        $movie->setTrailer($data['trailer'] ?? $movie->getTrailer());
         $categoryIds = $data['categories'] ?? [];
         $categories = $doctrine->getRepository(Categories::class)->findBy(['id' => $categoryIds]);
         foreach ($movie->getCategories() as $category) {

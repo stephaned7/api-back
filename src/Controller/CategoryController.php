@@ -5,7 +5,9 @@ namespace App\Controller;
 use App\Entity\Categories;
 use App\Repository\CategoriesRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -26,18 +28,39 @@ class CategoryController extends AbstractController
     #[Route('/categories', name: 'get_all_categories', methods: ['GET'])]
     public function getCategs(): JsonResponse
     {
-        $categs = $this->categRepo->findAll();
-        $categsArray = [];
-        foreach($categs as $categ){
-            $categsArray[] = [
-                'id' => $categ->getId(),
-                'name' => $categ->getName()
-            ];
-        }
-    
-        return $this->json($categsArray);
+            $categs = $this->categRepo->findAll();
+            $categsArray = [];
+            
+            foreach($categs as $categ){
+                $movies = $categ->getMovies();
+                $moviesArray = [];
+                
+                foreach($movies as $movie){
+                    $moviesArray[] = [
+                        'id' => $movie->getId(),
+                        'title' => $movie->getTitle(),
+                        'synopsis' => $movie->getSynopsis(),
+                        'release_date' => $movie->getReleaseDate(),
+                        'director' => $movie->getDirector(),
+                        'categories' => $movie->getCategories()->map(function($categories){
+                            return [
+                                'id' => $categories->getId(),
+                                'name' => $categories->getName()
+                            ];
+                        })->toArray()
+                    ];
+                }
+                
+                $categsArray[] = [
+                    'id' => $categ->getId(),
+                    'name' => $categ->getName(),
+                    'movies' => $moviesArray
+                ];
+            }
+            
+            return $this->json($categsArray);
     }
-
+    
     #[Route('/categories/{id}', name:'get_category', methods: ['GET'])]
     public function getCateg($id): JsonResponse
     {
@@ -74,6 +97,28 @@ class CategoryController extends AbstractController
 
     }
 
+    #[Route('/category/{id}', name:'get_category', methods: ['GET'])]
+    public function getCategory($id,): JsonResponse
+    {
+        if(!$id){
+            return $this->json(['message' => 'Catégorie non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+        
+        $categ = $this->categRepo->find($id);
+
+        if(!$categ){
+            return $this->json(['message' => 'Catégorie non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        $categ = [
+            'id' => $categ->getId(),
+            'name' => $categ->getName()
+        ];
+        
+
+        return $this->json($categ);
+    }
+
     #[Route('/categories', name:'add_category', methods: ['POST'])]
     public function addCateg(Request $request): JsonResponse
     {
@@ -94,12 +139,12 @@ class CategoryController extends AbstractController
         $categ = $this->categRepo->find($id);
         $data = json_decode($request->getContent(), true);
 
-        $categ->setName($data['name']);
+        $categ->setName($data['name'] ?? $categ->getName());
 
         $this->em->persist($categ);
         $this->em->flush();
 
-        return $this->json($categ);
+        return $this->json($categ, 200, [], ['groups' => 'category:read']);
     }
 
     #[Route('/categories/{id}', name:'delete_category', methods: ['DELETE'])]
@@ -115,5 +160,36 @@ class CategoryController extends AbstractController
         $this->em->flush();
 
         return $this->json(['message' => 'Catégorie supprimée']);
+    }
+
+    #[Route('/categories/movies/{id}', name:'get_movies_by_category', methods: ['GET'])]
+    public function getMoviesByCateg($id): JsonResponse
+    {
+        $categ = $this->categRepo->find($id);
+
+        if(!$categ){
+            return $this->json(['message' => 'Catégorie non trouvée'], Response::HTTP_NOT_FOUND);
+        }
+
+        $movies = $categ->getMovies();
+        $moviesArray = [];
+
+        foreach($movies as $movie){
+            $moviesArray[] = [
+                'id' => $movie->getId(),
+                'title' => $movie->getTitle(),
+                'synopsis' => $movie->getSynopsis(),
+                'release_date' => $movie->getReleaseDate(),
+                'director' => $movie->getDirector(),
+                'categories' => $movie->getCategories()->map(function($categories){
+                    return [
+                        'id' => $categories->getId(),
+                        'name' => $categories->getName()
+                    ];
+                })->toArray()
+            ];
+        }
+
+        return $this->json($moviesArray);
     }
 }
