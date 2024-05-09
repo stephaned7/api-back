@@ -107,8 +107,10 @@ class SecurityController extends AbstractController
 
     #[Route('/userBan/{id}', name:'user_ban', methods: ['PUT'])]
     public function banUser($id): JsonResponse
-    {
+    {        
         $user = $this->userRepo->find($id);
+
+
 
         if(!$user){
             return new JsonResponse(['message' => 'Utilisateur non trouvé'], JsonResponse::HTTP_NOT_FOUND);
